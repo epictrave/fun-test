@@ -2,6 +2,7 @@ import {AbortController} from '@azure/abort-controller';
 import {AzureFunction, Context, HttpRequest} from '@azure/functions';
 import {BlobServiceClient, StorageSharedKeyCredential,} from '@azure/storage-blob';
 import * as moment from 'moment';
+
 import * as sharp from 'sharp';
 
 const STORAGE_ACCOUNT_NAME = 'scfncentralkrdev02';
