@@ -1,0 +1,90 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+variables:
+
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: 'e9248e95-db55-45bb-ad91-44e6277ea76c'
+
+  # Function app name
+  functionAppName: 'asdfasdf213'
+ 
+  # Environment name
+  environmentName: 'asdfasdf213'
+ 
+  # Agent VM image name
+  vmImageName: 'vs2017-win2016'
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+      
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '10.x'
+      displayName: 'Install Node.js'
+
+    - bash: |
+        if [ -f extensions.csproj ]
+        then
+            dotnet build extensions.csproj --output ./bin
+        fi
+      displayName: 'Build extensions'
+
+
+    - bash: |
+        npm install 
+        npm run build --if-present
+        npm prune --production
+      displayName: 'Prepare binaries'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+    - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+      artifact: drop
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:            
+          - task: AzureFunctionApp@1
+            displayName: 'Azure Functions App Deploy: asdfasdf213'
+            inputs:
+              azureSubscription: 'Imagination Garden Development Subscription (a196ff87-0731-45e3-9079-5bc3879b07bd)'
+              appType: 'functionApp'
+              appName: 'FN-IoTHub-CentralKR-IG-Dev01'
+              deployToSlotOrASE: true
+              resourceGroupName: 'FN-IoTHub-CentralKR-IG-Dev-RG'
+              slotName: 'tt'
+              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+              deploymentMethod: 'auto'
+      
