@@ -13,7 +13,7 @@
     "@azure/abort-controller": "^1.0.1",
     "@azure/storage-blob": "^12.1.2",
     "moment": "^2.26.0",
-    "sharp": "^0.25.3",
+    "sharp": "^0.30.5",
     "@azure/functions": "^1.0.2-beta2",
     "@types/node": "^13.1.8",
     "azure-iothub": "^1.11.2",
